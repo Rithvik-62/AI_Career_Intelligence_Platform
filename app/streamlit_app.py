@@ -12,10 +12,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Run Diagnostics
+# Run Diagnostics — only hard-stop on FAIL (missing models or packages)
 diagnostics = run_all_diagnostics()
 if diagnostics["overall_status"] == "FAIL":
-    st.error("🚨 System Environment Diagnostics Failed")
+    st.error("🚨 System Environment Diagnostics Failed — a required component is missing.")
+    for k, v in diagnostics["results"].items():
+        if v["status"] == "FAIL":
+            st.error(f"**{k.capitalize()}:** {v['message']}")
+            if "fix" in v:
+                st.info(f"**Fix:** {v['fix']}")
     st.stop()
 
 # Define Structured Multi-Page Navigation with Icons & Categories

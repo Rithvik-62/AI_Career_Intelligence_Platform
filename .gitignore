@@ -1,12 +1,10 @@
 # .gitignore — AI Career Intelligence Platform
 
 # ============================================================
-# ⚠️  SECRETS — NEVER commit these to GitHub
+# SECRETS — NEVER commit these to GitHub
 # ============================================================
 .env
 .env.local
-.env.*.local
-secrets.toml
 .streamlit/secrets.toml
 
 # ============================================================
@@ -40,23 +38,12 @@ build/
 logs/
 *.log
 temp_pdfs/
-*.pdf
 
 # ============================================================
-# Data files (large files — not suitable for GitHub)
+# Large raw/processed datasets — NOT needed for cloud deploy
 # ============================================================
 dataset/raw/
 dataset/processed/
-*.csv
-*.xlsx
-*.sqlite3
-
-# ============================================================
-# Trained ML models (large binaries — use Git LFS or Cloud)
-# ============================================================
-# NOTE: models/ IS included so Streamlit Cloud can run predictions
-# Exclude only large interim training checkpoints:
-models/checkpoints/
 
 # ============================================================
 # OS and IDE artefacts
@@ -71,3 +58,7 @@ Thumbs.db
 # Agent / dev tool artefacts
 # ============================================================
 .gemini/
+
+# NOTE: models/*.pkl files ARE committed so Streamlit Cloud
+# can run ML predictions without retraining.
+# NOTE: *.pdf temp uploads are NOT committed (handled by temp_pdfs/ above).

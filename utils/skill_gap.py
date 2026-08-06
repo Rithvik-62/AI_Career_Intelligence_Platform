@@ -68,3 +68,7 @@ class SkillGapAnalyzer:
             "total_required": len(required_skills),
             "summary": summary
         }
+
+    def analyze_gap(self, parsed_data: Dict[str, Any], target_role: str) -> Dict[str, Any]:
+        """Alias for analyze method to guarantee backward compatibility."""
+        return self.analyze(parsed_data, target_role)

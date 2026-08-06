@@ -116,9 +116,9 @@ class ResumeScorer:
         """Calculates ATS Formatting & Structural Compatibility Score (0-100)."""
         score = 40  # Baseline for valid PDF parsing
         
-        if parsed_data.get('email'): score += 10
-        if parsed_data.get('phone'): score += 10
-        if parsed_data.get('linkedin') or parsed_data.get('github'): score += 10
+        if parsed_data.get('email') and parsed_data.get('email') != 'Email Not Found': score += 10
+        if parsed_data.get('phone') and parsed_data.get('phone') != 'Phone Not Found': score += 10
+        if (parsed_data.get('linkedin') and parsed_data.get('linkedin') != 'LinkedIn Not Provided') or (parsed_data.get('github') and parsed_data.get('github') != 'GitHub Not Provided'): score += 10
         if len(parsed_data.get('skills', [])) >= 5: score += 10
         if len(parsed_data.get('education', [])) >= 1: score += 10
         if len(parsed_data.get('experience', [])) >= 1 or len(parsed_data.get('projects', [])) >= 1: score += 10
@@ -128,9 +128,9 @@ class ResumeScorer:
     def _calculate_completeness(self, parsed_data: Dict[str, Any]) -> float:
         """Calculates Resume Completeness % across 8 key structural elements."""
         fields = [
-            bool(parsed_data.get('name')),
-            bool(parsed_data.get('email')),
-            bool(parsed_data.get('phone')),
+            bool(parsed_data.get('name') and parsed_data.get('name') != 'Name Not Detected'),
+            bool(parsed_data.get('email') and parsed_data.get('email') != 'Email Not Found'),
+            bool(parsed_data.get('phone') and parsed_data.get('phone') != 'Phone Not Found'),
             bool(parsed_data.get('skills')),
             bool(parsed_data.get('education')),
             bool(parsed_data.get('experience')),
@@ -183,8 +183,10 @@ class ResumeScorer:
         }
 
         all_suggestions = skills_sug + edu_sug + proj_sug + exp_sug + cert_sug
-        if not parsed_data.get('linkedin'): all_suggestions.append("Add LinkedIn profile link for social verification.")
-        if not parsed_data.get('github'): all_suggestions.append("Add GitHub profile link to showcase code repositories.")
+        if not parsed_data.get('linkedin') or parsed_data.get('linkedin') == 'LinkedIn Not Provided':
+            all_suggestions.append("Add LinkedIn profile link for social verification.")
+        if not parsed_data.get('github') or parsed_data.get('github') == 'GitHub Not Provided':
+            all_suggestions.append("Add GitHub profile link to showcase code repositories.")
 
         return {
             "overall_score": overall_score,
@@ -217,3 +219,7 @@ class ResumeScorer:
             "interpretations": interpretations,
             "suggestions": all_suggestions
         }
+
+    def calculate_score(self, parsed_data: Dict[str, Any], target_role: str = None) -> Dict[str, Any]:
+        """Alias for score_resume to guarantee backward compatibility."""
+        return self.score_resume(parsed_data)

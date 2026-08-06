@@ -1,16 +1,10 @@
 import os, sys, glob, py_compile
+import joblib  # pyrefly: ignore [missing-import] # type: ignore
 
 # Ensure root workspace directory is in python path for IDE static linters and execution
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if root not in sys.path:
     sys.path.insert(0, root)
-
-try:
-    import joblib  # pyrefly: ignore [missing-import] # type: ignore
-except ImportError:
-    import pip
-    pip.main(['install', 'joblib'])
-    import joblib  # type: ignore
 
 from utils.parser import ResumeParser  # pyrefly: ignore [missing-import] # type: ignore
 from utils.predictor import CareerPredictor  # pyrefly: ignore [missing-import] # type: ignore

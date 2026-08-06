@@ -32,12 +32,12 @@ try:
 
         # 1. Gemini AI Executive Summary Card
         st.markdown(
-            f'<div class="premium-card" style="border-left:4px solid var(--primary); background:linear-gradient(135deg, rgba(124,58,237,0.1) 0%, rgba(6,182,212,0.1) 100%);">'
+            f'<div class="premium-card" style="border-left:4px solid var(--primary); background:linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(6,182,212,0.08) 100%);">'
             f'<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">'
             f'<h3 style="margin:0; color:var(--accent);">🤖 Gemini AI Executive Summary</h3>'
-            f'<span style="font-size:0.8rem; background:rgba(6,182,212,0.15); color:var(--accent); padding:3px 10px; border-radius:12px; border:1px solid rgba(6,182,212,0.3);">Real-Time Intelligence</span>'
+            f'<span style="font-size:0.78rem; background:rgba(6,182,212,0.15); color:var(--accent); padding:3px 10px; border-radius:12px; border:1px solid rgba(6,182,212,0.3);">Real-Time Intelligence</span>'
             f'</div>'
-            f'<p style="color:var(--text-muted); font-size:1rem; line-height:1.6; margin:0;">'
+            f'<p style="color:var(--text-muted); font-size:0.98rem; line-height:1.6; margin:0;">'
             f'Candidate <strong>{parsed_data.get("name", "Alex Rivera")}</strong> exhibits an overall profile score of <strong>{score}/100</strong> '
             f'with an ATS compatibility index of <strong>{ats}%</strong>. Primary machine learning classification identifies a strong statistical trajectory towards '
             f'<strong>{role}</strong> ({conf}% confidence). Key missing competencies to unlock top-tier roles: <strong>{", ".join(skill_gap_data.get("missing_skills", [])[:3])}</strong>.'
@@ -72,7 +72,7 @@ try:
                    cat_scores.get('certifications',0)/15*100],
                 theta=['Skills', 'Experience', 'Projects', 'Education', 'Certs']))
             fig_radar = px.line_polar(df_radar, r='r', theta='theta', line_close=True)
-            fig_radar.update_traces(fill='toself', line_color='#7C3AED', fillcolor="rgba(124,58,237,0.35)")
+            fig_radar.update_traces(fill='toself', line_color='#2563EB', fillcolor="rgba(37,99,235,0.25)")
             apply_plotly_theme(fig_radar)
             fig_radar.update_layout(height=260, polar=dict(bgcolor="rgba(0,0,0,0)", radialaxis=dict(visible=True, range=[0, 100])))
             st.plotly_chart(fig_radar, use_container_width=True)
@@ -86,7 +86,11 @@ try:
                 gauge={
                     'axis': {'range': [0, 100]},
                     'bar': {'color': "#06B6D4"},
-                    'steps': [{'range': [0, 60], 'color': "rgba(239,68,68,0.3)"}, {'range': [60, 85], 'color': "rgba(245,158,11,0.3)"}, {'range': [85, 100], 'color': "rgba(16,185,129,0.3)"}]
+                    'steps': [
+                        {'range': [0, 60], 'color': "rgba(239, 68, 68, 0.2)"},
+                        {'range': [60, 85], 'color': "rgba(245, 158, 11, 0.2)"},
+                        {'range': [85, 100], 'color': "rgba(34, 197, 94, 0.2)"}
+                    ]
                 }
             ))
             apply_plotly_theme(fig_gauge)
@@ -99,7 +103,7 @@ try:
             acquired_cnt = len(skill_gap_data.get('acquired_skills', []))
             missing_cnt = len(skill_gap_data.get('missing_skills', []))
             df_donut = pd.DataFrame({'Status': ['Acquired', 'Missing'], 'Count': [acquired_cnt, missing_cnt]})
-            fig_donut = px.pie(df_donut, values='Count', names='Status', hole=0.55, color='Status', color_discrete_map={'Acquired':'#10B981', 'Missing':'#EF4444'})
+            fig_donut = px.pie(df_donut, values='Count', names='Status', hole=0.55, color='Status', color_discrete_map={'Acquired':'#22C55E', 'Missing':'#EF4444'})
             apply_plotly_theme(fig_donut)
             fig_donut.update_layout(height=260)
             st.plotly_chart(fig_donut, use_container_width=True)
@@ -119,7 +123,7 @@ try:
                 'Skill': [s.title() for s in skills_list],
                 'Value': [1] * len(skills_list)
             })
-            fig_tree = px.treemap(df_tree, path=['Category', 'Skill'], values='Value', color='Value', color_continuous_scale='Purples')
+            fig_tree = px.treemap(df_tree, path=['Category', 'Skill'], values='Value', color='Value', color_continuous_scale='Blues')
             apply_plotly_theme(fig_tree)
             fig_tree.update_layout(height=280)
             st.plotly_chart(fig_tree, use_container_width=True)
@@ -137,7 +141,7 @@ try:
                     cat_scores.get('certifications',0)/15*100
                 ]
             })
-            fig_heat = px.density_heatmap(df_heat, x='Metric', y='Performance %', z='Performance %', color_continuous_scale='Viridis')
+            fig_heat = px.density_heatmap(df_heat, x='Metric', y='Performance %', z='Performance %', color_continuous_scale='Blues')
             apply_plotly_theme(fig_heat)
             fig_heat.update_layout(height=280)
             st.plotly_chart(fig_heat, use_container_width=True)

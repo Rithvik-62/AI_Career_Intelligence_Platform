@@ -7,20 +7,33 @@ st.set_page_config(page_title="Resume Deep Extraction", page_icon="📄", layout
 inject_global_css()
 render_aria_sidebar_chatbot()
 
+def format_url_link(url_val, default_label):
+    if isinstance(url_val, str) and url_val.startswith("http"):
+        return f'<a href="{url_val}" target="_blank" style="color:var(--accent);">{url_val}</a>'
+    elif isinstance(url_val, str) and url_val.strip():
+        return url_val.strip()
+    return default_label
+
 try:
     section_title("Resume Deep Extraction & Parsing Engine", "📄")
     if 'parsed_data' not in st.session_state or st.session_state['parsed_data'] is None:
         st.warning("Please upload a resume on the Home page first to view extracted structured data.")
     else:
         data = st.session_state['parsed_data']
-        name = data.get('name', 'Name Not Detected')
-        email = data.get('email', 'Email Not Found')
-        phone = data.get('phone', 'Phone Not Found')
-        location = data.get('location', 'Location Not Specified')
-        linkedin = data.get('linkedin', 'LinkedIn Not Provided')
-        github = data.get('github', 'GitHub Not Provided')
-        portfolio = data.get('portfolio', 'Portfolio Not Provided')
-        confidence = data.get('metadata', {}).get('parsing_confidence', 0.0)
+        
+        name = data.get('name') or 'Name Not Detected'
+        email = data.get('email') or 'Email Not Found'
+        phone = data.get('phone') or 'Phone Not Found'
+        location = data.get('location') or 'Location Not Specified'
+        linkedin_val = data.get('linkedin')
+        github_val = data.get('github')
+        portfolio_val = data.get('portfolio')
+        
+        linkedin_display = format_url_link(linkedin_val, "LinkedIn Not Provided")
+        github_display = format_url_link(github_val, "GitHub Not Provided")
+        portfolio_display = format_url_link(portfolio_val, "Portfolio Not Provided")
+        
+        confidence = data.get('metadata', {}).get('parsing_confidence', 0.0) if isinstance(data.get('metadata'), dict) else 0.0
 
         # 1. Candidate Hero Header Card
         st.markdown(
@@ -41,9 +54,9 @@ try:
             f'</div>'
             f'</div>'
             f'<div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:flex; gap:16px; flex-wrap:wrap; font-size:0.88rem;">'
-            f'<span>🔗 <strong>LinkedIn:</strong> {f"<a href=\'{linkedin}\' target=\'_blank\'>{linkedin}</a>" if linkedin.startswith("http") else linkedin}</span>'
-            f'<span>💻 <strong>GitHub:</strong> {f"<a href=\'{github}\' target=\'_blank\'>{github}</a>" if github.startswith("http") else github}</span>'
-            f'<span>🌐 <strong>Portfolio:</strong> {f"<a href=\'{portfolio}\' target=\'_blank\'>{portfolio}</a>" if portfolio.startswith("http") else portfolio}</span>'
+            f'<span>🔗 <strong>LinkedIn:</strong> {linkedin_display}</span>'
+            f'<span>💻 <strong>GitHub:</strong> {github_display}</span>'
+            f'<span>🌐 <strong>Portfolio:</strong> {portfolio_display}</span>'
             f'</div>'
             f'</div>',
             unsafe_allow_html=True
@@ -68,14 +81,16 @@ try:
             if not exp:
                 st.info("No work experience records found.")
             for e in exp:
-                render_experience_card(e)
+                if isinstance(e, dict):
+                    render_experience_card(e)
 
             st.markdown("### 🏛️ Education Records")
             edu = data.get("education", [])
             if not edu:
                 st.info("No education records found.")
             for e in edu:
-                render_education_card(e)
+                if isinstance(e, dict):
+                    render_education_card(e)
 
         with col2:
             st.markdown("### 💻 Projects & Systems")
@@ -83,7 +98,8 @@ try:
             if not proj:
                 st.info("No projects found.")
             for p in proj:
-                render_project_card(p)
+                if isinstance(p, dict):
+                    render_project_card(p)
 
             st.markdown("### 📜 Certifications & Achievements")
             certs = data.get("certifications", [])

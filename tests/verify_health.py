@@ -1,4 +1,10 @@
 import os, sys, glob, py_compile
+
+# Ensure root workspace directory is in python path for IDE static linters and execution
+root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if root not in sys.path:
+    sys.path.insert(0, root)
+
 try:
     import joblib  # pyrefly: ignore [missing-import] # type: ignore
 except ImportError:
@@ -6,10 +12,15 @@ except ImportError:
     pip.main(['install', 'joblib'])
     import joblib  # type: ignore
 
+from utils.parser import ResumeParser  # pyrefly: ignore [missing-import] # type: ignore
+from utils.predictor import CareerPredictor  # pyrefly: ignore [missing-import] # type: ignore
+from utils.scoring import ResumeScorer  # pyrefly: ignore [missing-import] # type: ignore
+from utils.skill_gap import SkillGapAnalyzer  # pyrefly: ignore [missing-import] # type: ignore
+from utils.insights import InsightEngine  # pyrefly: ignore [missing-import] # type: ignore
+
 print('================================================================================')
 print('1. AUDITING ALL PYTHON FILES FOR SYNTAX & COMPILATION ERRORS')
 print('================================================================================')
-root = os.getcwd()
 py_files = sorted(glob.glob(os.path.join(root, '**', '*.py'), recursive=True))
 
 errors = []
@@ -49,19 +60,12 @@ print('SUCCESS: All 3 ML Models loaded into RAM successfully!\n')
 print('================================================================================')
 print('3. RUNNING END-TO-END PIPELINE ACROSS ALL 10 SAMPLE RESUMES')
 print('================================================================================')
-sys.path.append(root)
-from utils.parser import ResumeParser
-from utils.predictor import CareerPredictor
-from utils.scoring import ResumeScorer
-from utils.skill_gap import SkillGapAnalyzer
-from utils.insights import InsightEngine
-
 parser = ResumeParser()
 predictor = CareerPredictor()
 scorer = ResumeScorer()
 analyzer = SkillGapAnalyzer()
 
-pdf_files = sorted(glob.glob('Sample_Resume/*.pdf'))
+pdf_files = sorted(glob.glob(os.path.join(root, 'Sample_Resume', '*.pdf')))
 
 for pdf in pdf_files:
     fname = os.path.basename(pdf)

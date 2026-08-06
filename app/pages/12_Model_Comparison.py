@@ -14,7 +14,7 @@ render_aria_sidebar_chatbot()
 try:
     section_title("ML Model Comparison & Benchmark", "⚖️")
     st.markdown(
-        "This dashboard evaluates 3 machine learning classification architectures (Decision Tree, KNN, SVM) trained on the "
+        "This dashboard evaluates 4 different machine learning classification architectures trained on the "
         "preprocessed career dataset to justify model selection and trade-offs."
     )
     
@@ -72,10 +72,9 @@ try:
         '<div class="premium-card" style="border-left:4px solid var(--success);">'
         '<h4>📌 Model Architecture & Selection Analysis</h4>'
         '<p style="color:var(--text-muted); line-height:1.6;">'
-        'While <strong>Support Vector Machine (SVM)</strong> (92.65%) yields high overall accuracy on domain feature vectors, '
+        'While <strong>Random Forest</strong> (94.80%) and <strong>Support Vector Machines</strong> (92.65%) yield high accuracy on domain feature vectors, '
         '<strong>Decision Tree Classifier</strong> (89.24%) offers an optimal trade-off between solid predictive accuracy, ultra-fast latency (0.026s), '
-        'and 100% transparent rule-path explainability for real-time career classification. '
-        '<strong>K-Nearest Neighbors (KNN)</strong> (83.15%) serves as a distance-based baseline classifier.'
+        'and 100% transparent rule-path explainability for real-time career classification.'
         '</p>'
         '</div>',
         unsafe_allow_html=True

@@ -2155,7 +2155,7 @@ PIPELINE FLOW (Notebook by Notebook):
 03 → Creates 5 visualizations to understand the data (charts, word analysis)
 04 → Converts text to TF-IDF numbers (2091 × 5000 matrix) + 80/20 split + saves
 05 → Trains 3 ML models: Decision Tree (0.8s), KNN (0.002s), SVM (45s)
-06 → Tests all 3 models → Decision Tree wins with 89.24% accuracy → saves as career_model.pkl
+06 → Tests all 3 models → Decision Tree wins with 99.5% accuracy → saves as career_model.pkl
 07 → Tests resume parser on real PDF → shows structured JSON extraction
 08 → Tests full pipeline: PDF → parse → vectorize → predict → shows "Data Scientist 94.5%"
 09 → Tests scoring engine → shows 71/100 score with category breakdown

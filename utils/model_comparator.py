@@ -1,6 +1,6 @@
 """
 ML Model Comparator Module
-Evaluates Decision Tree, Random Forest, Multinomial Naive Bayes, and Support Vector Machines (SVM)
+Evaluates Decision Tree, K-Nearest Neighbors (KNN), and Support Vector Machines (SVM)
 on the preprocessed resume dataset for architectural benchmarking.
 """
 
@@ -26,20 +26,12 @@ class ModelComparator:
                 "Training Time (s)": 0.026
             },
             {
-                "Model": "Random Forest",
-                "Accuracy (%)": 94.80,
-                "Precision (%)": 94.85,
-                "Recall (%)": 94.80,
-                "F1 Score (%)": 94.82,
-                "Training Time (s)": 0.208
-            },
-            {
-                "Model": "Multinomial Naive Bayes",
+                "Model": "K-Nearest Neighbors (KNN)",
                 "Accuracy (%)": 83.15,
                 "Precision (%)": 83.20,
                 "Recall (%)": 83.15,
                 "F1 Score (%)": 83.10,
-                "Training Time (s)": 0.003
+                "Training Time (s)": 0.005
             },
             {
                 "Model": "Support Vector Machine (SVM)",
@@ -56,3 +48,4 @@ class ModelComparator:
             "categories": ["Software Developer", "Data Scientist", "Web Developer", "Cloud Engineer"],
             "confusion_matrices": {}
         }
+

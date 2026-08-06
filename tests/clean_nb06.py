@@ -1,0 +1,220 @@
+import json
+import os
+
+nb = {
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Phase 6: Model Evaluation and Selection\n",
+    "In this notebook, we load the trained models from Phase 5 and evaluate them on unseen testing data. We generate classification reports, confusion matrices, and cross-validation scores to confidently select the most robust model for deployment."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import joblib\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns\n",
+    "import shutil\n",
+    "import os\n",
+    "from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix\n",
+    "from sklearn.model_selection import cross_val_score\n",
+    "\n",
+    "plt.style.use('ggplot')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1. Load Models & Data\n",
+    "We load the serialized TF-IDF testing sparse matrices, the target arrays, the `LabelEncoder`, and our three predictive models."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X_train = joblib.load('../models/X_train.pkl')\n",
+    "y_train = joblib.load('../models/y_train.pkl')\n",
+    "X_test = joblib.load('../models/X_test.pkl')\n",
+    "y_test = joblib.load('../models/y_test.pkl')\n",
+    "label_encoder = joblib.load('../models/label_encoder.pkl')\n",
+    "\n",
+    "dt_model = joblib.load('../models/decision_tree_model.pkl')\n",
+    "knn_model = joblib.load('../models/knn_model.pkl')\n",
+    "svm_model = joblib.load('../models/svm_model.pkl')\n",
+    "\n",
+    "class_names = label_encoder.classes_\n",
+    "\n",
+    "models = {\n",
+    "    'Decision Tree': dt_model,\n",
+    "    'KNN': knn_model,\n",
+    "    'SVM': svm_model\n",
+    "}\n",
+    "\n",
+    "print(\"All models and data loaded successfully.\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 2. Evaluate Models (Predictions & Metrics)\n",
+    "Iterating through each model to generate predictions on `X_test`. We extract Accuracy, Precision, Recall, and F1-Scores."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "metrics_data = []\n",
+    "\n",
+    "for name, model in models.items():\n",
+    "    print(f\"\\n{'='*40}\")\n",
+    "    print(f\"Evaluating: {name}\")\n",
+    "    print(f\"{'='*40}\")\n",
+    "    \n",
+    "    # Generate Predictions\n",
+    "    preds = model.predict(X_test)\n",
+    "    \n",
+    "    # Evaluation Metrics\n",
+    "    acc = accuracy_score(y_test, preds)\n",
+    "    prec = precision_score(y_test, preds, average='weighted', zero_division=0)\n",
+    "    rec = recall_score(y_test, preds, average='weighted', zero_division=0)\n",
+    "    f1 = f1_score(y_test, preds, average='weighted', zero_division=0)\n",
+    "    \n",
+    "    # Classification Report\n",
+    "    print(\"\\nClassification Report:\")\n",
+    "    print(classification_report(y_test, preds, target_names=class_names, zero_division=0))\n",
+    "    \n",
+    "    # Cross Validation\n",
+    "    cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='accuracy', n_jobs=-1)\n",
+    "    cv_mean = cv_scores.mean()\n",
+    "    print(f\"5-Fold CV Mean Accuracy: {cv_mean:.4f} (+/- {cv_scores.std():.4f})\")\n",
+    "    \n",
+    "    metrics_data.append({\n",
+    "        'Model': name,\n",
+    "        'Accuracy': acc,\n",
+    "        'Precision': prec,\n",
+    "        'Recall': rec,\n",
+    "        'F1': f1,\n",
+    "        'Cross Validation Mean': cv_mean\n",
+    "    })"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 3. Model Comparison Table\n",
+    "Consolidating all extracted metrics into a single Pandas DataFrame."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_metrics = pd.DataFrame(metrics_data)\n",
+    "print(\"=== Model Comparison Table ===\")\n",
+    "display(df_metrics)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 4. Visualizing Performance\n",
+    "Plotting bar charts to compare Accuracy, Precision, Recall, F1, and Cross Validation Mean across our algorithms."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "metrics_to_plot = ['Accuracy', 'Precision', 'Recall', 'F1', 'Cross Validation Mean']\n",
+    "\n",
+    "for metric in metrics_to_plot:\n",
+    "    plt.figure(figsize=(8, 5))\n",
+    "    ax = sns.barplot(x='Model', y=metric, data=df_metrics, hue='Model', palette='viridis', legend=False)\n",
+    "    plt.title(f'{metric} Comparison')\n",
+    "    plt.ylim(0, 1.1)\n",
+    "    for i, v in enumerate(df_metrics[metric]):\n",
+    "        plt.text(i, v + 0.02, f\"{v:.4f}\", ha='center')\n",
+    "    plt.tight_layout()\n",
+    "    plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 5. Model Selection & Final Output\n",
+    "Automatically computing the best model based on weighted F1 score and Cross-Validation stability. The best model will be persisted as `models/career_model.pkl` for production use."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Determine the best model automatically\n",
+    "best_model_row = df_metrics.sort_values(by=['Cross Validation Mean', 'Accuracy', 'F1'], ascending=[False, False, False]).iloc[0]\n",
+    "best_model_name = best_model_row['Model']\n",
+    "\n",
+    "print(f\"Best Model Selected: {best_model_name}\")\n",
+    "\n",
+    "if best_model_name == 'Decision Tree':\n",
+    "    shutil.copy('../models/decision_tree_model.pkl', '../models/career_model.pkl')\n",
+    "elif best_model_name == 'KNN':\n",
+    "    shutil.copy('../models/knn_model.pkl', '../models/career_model.pkl')\n",
+    "else:\n",
+    "    shutil.copy('../models/svm_model.pkl', '../models/career_model.pkl')\n",
+    "\n",
+    "print(f\"Verified models/career_model.pkl exists: {os.path.exists('../models/career_model.pkl')}\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.14.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
+
+with open('notebooks/06_model_evaluation.ipynb', 'w', encoding='utf-8') as f:
+    json.dump(nb, f, indent=1)
+
+print("Saved clean 06_model_evaluation.ipynb")

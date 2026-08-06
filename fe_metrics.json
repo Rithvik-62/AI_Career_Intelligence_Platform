@@ -1,0 +1,1 @@
+{"num_features": 5000, "num_classes": 9, "density": 0.03825084745762712, "sparsity": 0.9617491525423729, "train_samples": 330, "test_samples": 83, "mapping": {"Business Analyst": 0, "Cloud Engineer": 1, "Cyber Security Analyst": 2, "Data Engineer": 3, "Data Scientist": 4, "Database Administrator": 5, "Machine Learning Engineer": 6, "Software Developer": 7, "Web Developer": 8}}

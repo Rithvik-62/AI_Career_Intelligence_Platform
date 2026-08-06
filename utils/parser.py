@@ -117,21 +117,21 @@ class ResumeParser:
         # LinkedIn Regex
         li_match = re.search(r'(?:https?://)?(?:www\.)?linkedin\.com/in/[a-zA-Z0-9_-]+/?', text, re.IGNORECASE)
         if li_match:
-            url = li_match.group(0).strip()
-            links['linkedin'] = url if url.startswith('http') else 'https://' + url
+            url = li_match.group(0).strip().rstrip('/')
+            links['linkedin'] = url if url.lower().startswith('http') else 'https://' + url
 
         # GitHub Regex
         gh_match = re.search(r'(?:https?://)?(?:www\.)?github\.com/[a-zA-Z0-9_-]+/?', text, re.IGNORECASE)
         if gh_match:
-            url = gh_match.group(0).strip()
-            links['github'] = url if url.startswith('http') else 'https://' + url
+            url = gh_match.group(0).strip().rstrip('/')
+            links['github'] = url if url.lower().startswith('http') else 'https://' + url
 
         # Portfolio Regex (other domain URLs like alexrivera.dev, sourabhbajaj.com)
         urls = re.findall(r'(?:https?://)?(?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.(?:com|dev|io|org|net|me|in|co)(?:/[^\s]*)?', text)
         for url in urls:
             u_lower = url.lower()
-            if not any(ignore in u_lower for ignore in ['linkedin.com', 'github.com', 'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'next.js']):
-                links['portfolio'] = url if url.startswith('http') else 'https://' + url
+            if not any(ignore in u_lower for ignore in ['linkedin.com', 'github.com', 'github.io', 'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'next.js']):
+                links['portfolio'] = url if url.lower().startswith('http') else 'https://' + url
                 break
 
         return links
@@ -144,14 +144,16 @@ class ResumeParser:
             match_state = re.search(r'\b([A-Z][a-zA-Z\s]{2,18}),\s*([A-Z]{2})\b', line)
             if match_state:
                 city, region = match_state.group(1).strip(), match_state.group(2).strip()
-                if region in self.valid_regions and city.lower() not in self.non_name_words:
-                    return f"{city}, {region}"
+                city_clean = re.sub(r'^(?:Technology|Institute|University|College|Microsoft|Google|Amazon|Meta|Apple)\s+', '', city, flags=re.IGNORECASE).strip()
+                if region in self.valid_regions and city_clean.lower() not in self.non_name_words:
+                    return f"{city_clean}, {region}"
 
             match_country = re.search(r'\b([A-Z][a-zA-Z\s]{2,18}),\s*([A-Z][a-zA-Z\s]{2,18})\b', line)
             if match_country:
                 city, country = match_country.group(1).strip(), match_country.group(2).strip()
-                if country in self.valid_regions and city.lower() not in self.non_name_words:
-                    return f"{city}, {country}"
+                city_clean = re.sub(r'^(?:Technology|Institute|University|College|Microsoft|Google|Amazon|Meta|Apple)\s+', '', city, flags=re.IGNORECASE).strip()
+                if country in self.valid_regions and city_clean.lower() not in self.non_name_words:
+                    return f"{city_clean}, {country}"
 
         return "Location Not Specified"
 

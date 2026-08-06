@@ -33,14 +33,9 @@ try:
         if k not in st.session_state:
             st.session_state[k] = None
 
-    @st.cache_resource
-    def load_predictor():
+    def get_predictor():
         models_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models'))
         return CareerPredictor(models_dir=models_dir)
-
-    @st.cache_resource
-    def load_parser():
-        return ResumeParser()
 
     # Demo Mode Toggle
     st.markdown("---")
@@ -52,10 +47,12 @@ try:
             "Data Scientist": {
                 'parsed': {
                     'name': 'Alex Rivera', 'email': 'alex.rivera@example.com', 'phone': '+1 (555) 234-5678',
+                    'location': 'San Francisco, CA', 'linkedin': 'https://linkedin.com/in/alexrivera', 'github': 'https://github.com/alexrivera', 'portfolio': 'https://alexrivera.dev',
                     'skills': ['Python', 'Machine Learning', 'TensorFlow', 'SQL', 'Data Visualization', 'Pandas', 'Keras', 'Scikit-Learn'],
                     'experience': [{'job_title': 'Senior Data Scientist', 'company': 'TechNova AI', 'dates': '2021-Present', 'description': 'Built customer churn models.'}],
                     'education': [{'degree': 'M.S. Computer Science', 'university': 'State University', 'description': 'Specialized in Artificial Intelligence.'}],
-                    'projects': [{'project_title': 'Predictive Analytics Engine', 'technologies': ['Python', 'TensorFlow'], 'description': 'Built a customer churn model using XGBoost.'}]
+                    'projects': [{'project_title': 'Predictive Analytics Engine', 'technologies': ['Python', 'TensorFlow'], 'description': 'Built a customer churn model using XGBoost.'}],
+                    'certifications': [{'title': 'TensorFlow Developer Certificate', 'description': 'Deep Learning & ML Model Deployment'}]
                 },
                 'prediction': {
                     'predicted_role': 'Data Scientist', 'confidence': 94.5,
@@ -116,6 +113,10 @@ try:
         if st.button("⚡ Initialize AI Analysis Sequence", type="primary", use_container_width=True):
             start_time = time.time()
             loading_placeholder = st.empty()
+            
+            # Reset old session state variables to guarantee fresh parsing
+            for key in ['parsed_data', 'prediction_data', 'scoring_data', 'skill_gap_data', 'insights_data', 'match_data']:
+                st.session_state[key] = None
         
             try:
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
@@ -136,7 +137,7 @@ try:
                 time.sleep(0.2)
             
                 update_loading("Parsing Resume Text & Entities...", "███░░░░░░░")
-                parser = load_parser()
+                parser = ResumeParser()
                 parsed_data = parser.parse(tmp_path)
             
                 if "error" in parsed_data:
@@ -145,7 +146,7 @@ try:
                     st.session_state['parsed_data'] = parsed_data
                 
                     update_loading("Predicting Career Trajectory (Top 5)...", "██████░░░░")
-                    predictor = load_predictor()
+                    predictor = get_predictor()
                     prediction_data = predictor.predict(tmp_path)
                 
                     if "error" in prediction_data:

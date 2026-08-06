@@ -22,12 +22,9 @@ class CareerPredictor:
     """
     def __init__(self, models_dir: str = MODELS_DIR):
         self.models_dir = models_dir
-        self.parser = ResumeParser()
-        
         self.model = None
         self.vectorizer = None
         self.label_encoder = None
-        
         self._load_models()
 
     def _load_models(self):
@@ -79,7 +76,6 @@ class CareerPredictor:
         weights = vectorized[non_zero_indices]
         words = feature_names[non_zero_indices]
         
-        # Sort by TF-IDF weight descending
         sorted_indices = np.argsort(weights)[::-1][:top_k]
         
         contributions = []
@@ -98,11 +94,12 @@ class CareerPredictor:
             return {"error": "Prediction service is unavailable due to missing models."}
             
         try:
-            parsed_data = self.parser.parse(pdf_file_path)
+            parser = ResumeParser()
+            parsed_data = parser.parse(pdf_file_path)
             if "error" in parsed_data:
                 return {"error": parsed_data["error"]}
                 
-            raw_text = self.parser._extract_text_from_pdf(pdf_file_path)
+            raw_text = parser._extract_text_from_pdf(pdf_file_path)
             if not raw_text.strip():
                 return {"error": "Extracted text is empty. Cannot predict career."}
 
@@ -119,7 +116,6 @@ class CareerPredictor:
                 top_role = top_predictions[0]["role"]
                 top_conf = top_predictions[0]["confidence"]
                 
-                # Explanation string
                 top_skills = [fc['feature'] for fc in feature_contributions[:3]]
                 explanation_str = f"The model predicts '{top_role}' ({top_conf}% confidence) because your resume contains high TF-IDF feature weights for key terms: {', '.join(top_skills)}."
                 

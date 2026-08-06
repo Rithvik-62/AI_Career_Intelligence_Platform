@@ -303,43 +303,82 @@ class ResumeParser:
         if not text.strip():
             return []
 
-        chunks = [b for b in re.split(r'\n\s*\n', text.strip()) if b.strip()]
-        if not chunks:
-            chunks = [text.strip()]
+        lines = [l.strip() for l in text.strip().split('\n') if l.strip()]
+        projects = []
+        curr = None
+        in_tech = False
+
+        for l in lines:
+            is_bullet = l.startswith(('-', '•', '*', '', ''))
+            is_tech = l.lower().startswith(('technologies:', 'technologies used:', 'key features:'))
+            if is_tech:
+                in_tech = True
+            
+            is_short_title = len(l.split()) <= 8 and not l.endswith((',', ';', '.'))
+            
+            if not is_bullet and not is_tech and not in_tech and is_short_title and (curr is None or len(curr['lines']) >= 2):
+                if curr:
+                    projects.append(curr)
+                curr = {'title': l, 'lines': []}
+                in_tech = False
+            elif curr:
+                curr['lines'].append(l)
+                if not l.endswith(','):
+                    in_tech = False
+            else:
+                curr = {'title': l, 'lines': []}
+
+        if curr:
+            projects.append(curr)
 
         parsed_blocks = []
-        for chunk in chunks:
-            lines = chunk.strip().split('\n')
-            title = lines[0] if lines else "Project Title Not Specified"
-            techs = self._extract_skills(chunk)
-
+        for p in projects:
+            title = p.get('title', 'Project')
+            full_desc = " ".join(p.get('lines', []))
+            techs = self._extract_skills(title + " " + full_desc)
             parsed_blocks.append({
                 "project_title": title,
                 "technologies": techs,
-                "description": chunk
+                "description": full_desc if full_desc else title
             })
-        return parsed_blocks
+
+        return parsed_blocks if parsed_blocks else [{"project_title": "Project Details", "technologies": self._extract_skills(text), "description": text.strip()}]
 
     def _parse_education(self, text: str) -> List[Dict[str, Any]]:
         """Parses education text into structured degree entry blocks."""
         if not text.strip():
             return []
 
-        chunks = [b for b in re.split(r'\n\s*\n', text.strip()) if b.strip()]
-        if not chunks:
-            chunks = [text.strip()]
+        lines = [l.strip() for l in text.strip().split('\n') if l.strip()]
+        degree_kw = re.compile(r'\b(Bachelor|Master|BCA|MCA|B\.?Tech|M\.?Tech|B\.?E\.?|M\.?S\.?|B\.?S\.?|PUC|Pre-University|SSLC|10th|12th|Diploma|Ph\.?D\.?|High School)\b', re.IGNORECASE)
+
+        entries = []
+        curr = None
+
+        for l in lines:
+            if degree_kw.search(l):
+                if curr:
+                    entries.append(curr)
+                curr = {'degree': l, 'lines': []}
+            elif curr:
+                curr['lines'].append(l)
+            else:
+                curr = {'degree': l, 'lines': []}
+
+        if curr:
+            entries.append(curr)
 
         parsed_blocks = []
-        for chunk in chunks:
-            lines = chunk.strip().split('\n')
-            degree = lines[0] if lines else "Degree Not Specified"
-
+        for e in entries:
+            deg = e.get('degree', 'Degree Not Specified')
+            inst = " ".join(e.get('lines', []))
             parsed_blocks.append({
-                "degree": degree,
-                "university": "Institution details contained in description",
-                "description": chunk
+                "degree": deg,
+                "university": inst if inst else "Institution details in description",
+                "description": f"{deg} - {inst}" if inst else deg
             })
-        return parsed_blocks
+
+        return parsed_blocks if parsed_blocks else [{"degree": lines[0] if lines else "Degree", "university": "Details in description", "description": text.strip()}]
 
     def _parse_certifications(self, text: str) -> List[Dict[str, Any]]:
         """Parses certifications and courses into structured title & description entries."""
@@ -356,7 +395,6 @@ class ResumeParser:
             if not lines:
                 continue
 
-            # Determine title line (first line without bullet symbol if available)
             title_line = lines[0]
             for l in lines:
                 if not l.startswith(('•', '-', '*', '', '')):

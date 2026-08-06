@@ -1,4 +1,10 @@
-import os, sys, glob, py_compile, joblib
+import os, sys, glob, py_compile
+try:
+    import joblib  # pyrefly: ignore [missing-import] # type: ignore
+except ImportError:
+    import pip
+    pip.main(['install', 'joblib'])
+    import joblib  # type: ignore
 
 print('================================================================================')
 print('1. AUDITING ALL PYTHON FILES FOR SYNTAX & COMPILATION ERRORS')

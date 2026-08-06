@@ -140,16 +140,13 @@ class ResumeParser:
         """Extracts candidate location (City, State / City, Country) with region validation."""
         lines = [l.strip() for l in text.split('\n')[:25] if l.strip()]
         
-        # 1. Look for explicit valid region matches (e.g. Seattle, WA / Rawalpindi, Pakistan / Atlanta, GA)
         for line in lines:
-            # Check for City, State Code (e.g. Seattle, WA or Atlanta, GA)
             match_state = re.search(r'\b([A-Z][a-zA-Z\s]{2,18}),\s*([A-Z]{2})\b', line)
             if match_state:
                 city, region = match_state.group(1).strip(), match_state.group(2).strip()
                 if region in self.valid_regions and city.lower() not in self.non_name_words:
                     return f"{city}, {region}"
 
-            # Check for City, Country (e.g. Rawalpindi, Pakistan)
             match_country = re.search(r'\b([A-Z][a-zA-Z\s]{2,18}),\s*([A-Z][a-zA-Z\s]{2,18})\b', line)
             if match_country:
                 city, country = match_country.group(1).strip(), match_country.group(2).strip()
@@ -166,13 +163,11 @@ class ResumeParser:
         raw_lines = [line.strip() for line in text.split('\n')[:15] if line.strip()]
         
         for line in raw_lines:
-            # 1. Clean line of URLs, emails, phone numbers, and common noise
             clean_line = re.sub(r'https?://[^\s]+', '', line, flags=re.IGNORECASE)
             clean_line = re.sub(r'(?:linkedin|github|towardsdatascience)\.com[^\s]*', '', clean_line, flags=re.IGNORECASE)
             clean_line = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', '', clean_line)
             clean_line = re.sub(r'(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}', '', clean_line)
             
-            # Remove title prefixes / honorifics / credentials
             clean_line = re.sub(r'\b(Name|Curriculum Vitae|CV|Resume|Profile|Objective|Email|Mobile|Phone|Contact|MBA|Ph\.?D\.?|PMP|B\.?Tech|M\.?S\.?)\b', '', clean_line, flags=re.IGNORECASE)
             clean_line = re.sub(r'[^a-zA-Z\s.-]', '', clean_line).strip()
             
@@ -254,7 +249,7 @@ class ResumeParser:
             elif re.match(r'^(\d+\.\s*)?(projects|academic projects|personal projects|key projects|software projects)[^a-z]*$', line_clean):
                 current_section = 'projects'
                 continue
-            elif re.match(r'^(\d+\.\s*)?(certifications|licenses|courses|certifications & licenses)[^a-z]*$', line_clean):
+            elif re.match(r'^(\d+\.\s*)?(certifications|courses|licenses|certifications & licenses|courses & certifications)[^a-z]*$', line_clean):
                 current_section = 'certifications'
                 continue
             elif re.match(r'^(\d+\.\s*)?(achievements|awards|honors|accomplishments|hackathons|competitions)[^a-z]*$', line_clean):
@@ -266,7 +261,7 @@ class ResumeParser:
             elif re.match(r'^(\d+\.\s*)?(summary|profile|professional summary|executive summary|about me|objective)[^a-z]*$', line_clean):
                 current_section = 'summary'
                 continue
-            elif re.match(r'^(\d+\.\s*)?(skills|technical skills|core competencies|skills & tools|tech stack)[^a-z]*$', line_clean):
+            elif re.match(r'^(\d+\.\s*)?(skills|technical skills|core competencies|skills & tools|tech stack|reasoning skills|languages)[^a-z]*$', line_clean):
                 current_section = None
                 continue
 
@@ -346,6 +341,38 @@ class ResumeParser:
             })
         return parsed_blocks
 
+    def _parse_certifications(self, text: str) -> List[Dict[str, Any]]:
+        """Parses certifications and courses into structured title & description entries."""
+        if not text.strip():
+            return []
+
+        blocks = [b for b in re.split(r'\n\s*\n', text.strip()) if b.strip()]
+        if not blocks:
+            blocks = [text.strip()]
+
+        parsed_certs = []
+        for block in blocks:
+            lines = [l.strip() for l in block.split('\n') if l.strip()]
+            if not lines:
+                continue
+
+            # Determine title line (first line without bullet symbol if available)
+            title_line = lines[0]
+            for l in lines:
+                if not l.startswith(('•', '-', '*', '', '')):
+                    title_line = l
+                    break
+
+            desc_lines = [l for l in lines if l != title_line]
+            desc_str = " ".join([re.sub(r'^[•\-\*]\s*', '', l) for l in desc_lines])
+
+            parsed_certs.append({
+                "title": re.sub(r'^[•\-\*]\s*', '', title_line),
+                "description": desc_str
+            })
+
+        return parsed_certs
+
     def _parse_list_section(self, text: str) -> List[str]:
         """Parses list sections into cleaned bullet point items."""
         if not text.strip():
@@ -407,7 +434,7 @@ class ResumeParser:
             "education": self._parse_education(sections_raw.get('education', '')),
             "experience": self._parse_experience(sections_raw.get('experience', '')),
             "projects": self._parse_projects(sections_raw.get('projects', '')),
-            "certifications": self._parse_list_section(sections_raw.get('certifications', '')),
+            "certifications": self._parse_certifications(sections_raw.get('certifications', '')),
             "achievements": self._parse_list_section(sections_raw.get('achievements', '')),
             "publications": self._parse_list_section(sections_raw.get('publications', '')),
             "metadata": {
@@ -421,7 +448,7 @@ class ResumeParser:
         if extracted_data["email"] != "Email Not Found": score += 20
         if extracted_data["phone"] != "Phone Not Found": score += 15
         if extracted_data["skills"]: score += 20
-        if extracted_data["experience"]: score += 15
+        if extracted_data["experience"] or extracted_data["projects"]: score += 15
         if extracted_data["education"]: score += 10
 
         extracted_data["metadata"]["parsing_confidence"] = min(100.0, float(score))

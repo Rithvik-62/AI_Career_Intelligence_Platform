@@ -1,5 +1,5 @@
 import streamlit as st
-import sys, os
+import sys, os, re
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from app.ui_components import inject_global_css, section_title, render_experience_card, render_project_card, render_education_card, premium_card, render_aria_sidebar_chatbot, status_chip
 
@@ -101,15 +101,51 @@ try:
                 if isinstance(p, dict):
                     render_project_card(p)
 
-            st.markdown("### 📜 Certifications & Achievements")
+            st.markdown("### 📜 Certifications & Courses")
             certs = data.get("certifications", [])
             achievements = data.get("achievements", [])
             if not certs and not achievements:
-                st.info("No certifications or achievements specified.")
+                st.info("No certifications or courses specified.")
+            
             for c in certs:
-                st.markdown(f"<div class='premium-card' style='padding:14px; margin-bottom:10px;'>📜 <strong>{c}</strong></div>", unsafe_allow_html=True)
+                if isinstance(c, dict):
+                    c_title = c.get('title', 'Certification Course')
+                    c_desc = c.get('description', '')
+                    desc_html = f"<div style='margin-top:6px; font-size:0.9rem; color:var(--text-muted); line-height:1.5;'>{c_desc}</div>" if c_desc else ""
+                    st.markdown(
+                        f"<div class='premium-card' style='padding:16px; margin-bottom:12px; border-left:3px solid var(--accent);'>"
+                        f"📜 <strong style='font-size:1.05rem; color:var(--text-main);'>{c_title}</strong>{desc_html}"
+                        f"</div>", 
+                        unsafe_allow_html=True
+                    )
+                elif isinstance(c, str) and c.strip():
+                    clean_c = re.sub(r'^[•\-\*]\s*', '', c.strip())
+                    st.markdown(
+                        f"<div class='premium-card' style='padding:14px; margin-bottom:10px;'>"
+                        f"📜 <strong>{clean_c}</strong>"
+                        f"</div>", 
+                        unsafe_allow_html=True
+                    )
+
             for a in achievements:
-                st.markdown(f"<div class='premium-card' style='padding:14px; margin-bottom:10px;'>🏆 <strong>{a}</strong></div>", unsafe_allow_html=True)
+                if isinstance(a, dict):
+                    a_title = a.get('title', 'Key Achievement')
+                    a_desc = a.get('description', '')
+                    desc_html = f"<div style='margin-top:6px; font-size:0.9rem; color:var(--text-muted); line-height:1.5;'>{a_desc}</div>" if a_desc else ""
+                    st.markdown(
+                        f"<div class='premium-card' style='padding:16px; margin-bottom:12px; border-left:3px solid var(--warning);'>"
+                        f"🏆 <strong style='font-size:1.05rem; color:var(--text-main);'>{a_title}</strong>{desc_html}"
+                        f"</div>", 
+                        unsafe_allow_html=True
+                    )
+                elif isinstance(a, str) and a.strip():
+                    clean_a = re.sub(r'^[•\-\*]\s*', '', a.strip())
+                    st.markdown(
+                        f"<div class='premium-card' style='padding:14px; margin-bottom:10px;'>"
+                        f"🏆 <strong>{clean_a}</strong>"
+                        f"</div>", 
+                        unsafe_allow_html=True
+                    )
 
 except Exception as e:
     import traceback

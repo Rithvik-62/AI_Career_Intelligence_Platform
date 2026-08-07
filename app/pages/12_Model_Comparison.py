@@ -72,8 +72,8 @@ try:
         '<div class="premium-card" style="border-left:4px solid var(--success);">'
         '<h4>📌 Model Architecture & Selection Analysis</h4>'
         '<p style="color:var(--text-muted); line-height:1.6;">'
-        'While <strong>Random Forest</strong> (94.80%) and <strong>Support Vector Machines</strong> (92.65%) yield high accuracy on domain feature vectors, '
-        '<strong>Decision Tree Classifier</strong> (89.24%) offers an optimal trade-off between solid predictive accuracy, ultra-fast latency (0.026s), '
+        'Our system evaluates multiple architectures on domain feature vectors. '
+        'The final chosen Machine Learning model offers an optimal trade-off between solid predictive accuracy, ultra-fast latency (0.026s), '
         'and 100% transparent rule-path explainability for real-time career classification.'
         '</p>'
         '</div>',

@@ -22,7 +22,7 @@ try:
     with col1:
         premium_card("Intelligent Parsing", "Extracts skills and projects natively from PDFs with deep NLP feature extraction.", "📄")
     with col2:
-        premium_card("Career Prediction", "Decision Tree & SVM models recommend your ideal tech role with statistical confidence.", "🔮")
+        premium_card("Career Prediction", "Machine Learning models recommend your ideal tech role with statistical confidence.", "🔮")
     with col3:
         premium_card("Gemini 3.6 AI Power", "Generates custom cover letters, resume rewrites, and 90-day transition roadmaps.", "⚡")
 

@@ -49,7 +49,7 @@ try:
             st.markdown(
                 f'<div class="premium-card" style="margin-top:15px; border-left:4px solid var(--accent);">'
                 f'<h4>💡 Predictive Analysis Summary</h4>'
-                f'<p style="color:var(--text-muted); line-height:1.5;">{data.get("explanation", "The Decision Tree classifier evaluated your vectorized resume tokens against 11 target technology role distributions.")}</p>'
+                f'<p style="color:var(--text-muted); line-height:1.5;">{data.get("explanation", "The machine learning model evaluated your vectorized resume tokens against target technology role distributions.")}</p>'
                 f'</div>',
                 unsafe_allow_html=True
             )

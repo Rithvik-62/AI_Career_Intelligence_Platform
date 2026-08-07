@@ -24,7 +24,7 @@ try:
     with col1:
         st.markdown("**Version:** 1.0.0 (Production)")
         st.markdown("**Environment:** Windows / Streamlit Engine")
-        st.markdown("**ML Backend:** Scikit-Learn Decision Trees")
+        st.markdown("**ML Backend:** Scikit-Learn Models")
     with col2:
         st.markdown("**NLP Backend:** pdfplumber, NLTK")
         st.markdown("**UI Framework:** Streamlit, Plotly")
